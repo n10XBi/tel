@@ -2,8 +2,6 @@ require('dotenv').config(); // Memuat variabel dari .env
 const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const path = require('path');
-const chalk = require('chalk');
-const ora = require('ora');
 
 // Konfigurasi token bot dan chat ID dari .env
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -26,7 +24,7 @@ const zalgo = (text) => {
   for (let char of text) {
     zalgoText += char;
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       zalgoText += randomChar(zalgoUp);
       zalgoText += randomChar(zalgoMid);
       zalgoText += randomChar(zalgoDown);
@@ -65,41 +63,45 @@ const sendImagesWithCrashText = async () => {
     );
 
     if (files.length === 0) {
-      console.log(chalk.yellow('⚠️ Tidak ada file gambar di folder. Menunggu gambar ditambahkan...'));
+      console.log('⚠️ Tidak ada file gambar di folder. Menunggu file baru...');
       return;
     }
 
-    const spinner = ora(chalk.blue('🚀 Mengirim gambar...')).start();
     const fileName = getRandomFile(files);
     const filePath = path.join(folderPath, fileName);
 
     try {
+      console.log(`\x1b[36m🚀 Mengirim: ${fileName}\x1b[0m`);
       await bot.sendPhoto(CHAT_ID, filePath, {
         caption: crashText,
         parse_mode: 'MarkdownV2',
         ...inlineKeyboard,
       });
       successCount++;
-      spinner.succeed(chalk.green(`✅ Berhasil mengirim: ${fileName}`));
+      console.log(`\x1b[32m✅ Status: Berhasil\x1b[0m`);
     } catch (error) {
       failureCount++;
-      spinner.fail(chalk.red(`❌ Gagal mengirim: ${fileName} - ${error.message}`));
+      console.error(`\x1b[31m❌ Status: Gagal - ${error.message}\x1b[0m`);
     }
+
+    const delay = Math.floor(Math.random() * (20 - 50 + 1) + 50);
+    await new Promise((resolve) => setTimeout(resolve, delay));
   } catch (error) {
-    console.error(chalk.red('❗ Terjadi kesalahan:'), error);
+    console.error('❗ Terjadi kesalahan:', error);
   }
 };
 
-const main = async () => {
-  console.log(chalk.cyan('🔥 Bot Pengiriman Gambar aktif! Tekan Ctrl+C untuk menghentikan.'));
-  console.log(chalk.magenta(`🌟 Total berhasil: ${successCount} | ❌ Total gagal: ${failureCount}`));
+const mainLoop = async () => {
+  console.clear();
+  console.log('🔥 Bot aktif. Tekan Ctrl + C untuk berhenti.');
+  console.log('==========================================');
+  console.log(`\x1b[33m📊 Total berhasil: ${successCount}\x1b[0m`);
+  console.log(`\x1b[31m📊 Total gagal: ${failureCount}\x1b[0m`);
+  console.log('==========================================\n');
 
   while (true) {
     await sendImagesWithCrashText();
-
-    // Delay 5 detik sebelum iterasi berikutnya
-    await new Promise((resolve) => setTimeout(resolve, 50));
   }
 };
 
-main();
+mainLoop();
