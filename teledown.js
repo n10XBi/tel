@@ -98,7 +98,7 @@ const main = async () => {
     await sendImagesWithCrashText();
 
     // Delay 5 detik sebelum iterasi berikutnya
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 50));
   }
 };
 
